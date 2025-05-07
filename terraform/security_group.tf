@@ -7,7 +7,7 @@ resource "aws_security_group" "rds_sg" {
     from_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
-    security_groups = []
+    security_groups = [aws_security_group.lambda_sg.id]
     description     = "Allow MySQL access from the application server"
   }
 
