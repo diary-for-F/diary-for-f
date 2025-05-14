@@ -78,4 +78,4 @@ Feel:lm은 감정을 자유롭게 기록하고, AI로부터 따뜻한 답장을 
 
 ## 🧪 프로토타입
 
-<img src="https://github.com/user-attachments/assets/1712913b-fa40-4971-b57b-66197df2cdc5">
+<img src="https://github.com/user-attachments/assets/21efaee1-ba15-4455-945f-8fe35b8cf1bf" width="300"/>
