@@ -1,47 +1,46 @@
 variable "function_name" {
   type        = string
-  description = "The name of the Lambda function."
+  description = "Lambda Function Name"
 }
 
 variable "description" {
   type        = string
-  description = "The description of the Lambda function."
+  description = "Lambda Function Description"
+  default     = ""
 }
 
 variable "handler" {
   type        = string
-  description = "The function entrypoint in your code."
+  description = "Lambda Handler Function (e.g., index.handler)"
 }
 
 variable "runtime" {
   type        = string
-  description = "The runtime environment for the Lambda function that you are uploading."
+  description = "Lambda Runtime Environment"
+  default     = "nodejs16.x"
 }
 
 variable "timeout" {
   type        = number
-  description = "The amount of time that Lambda allows a function to run before stopping it. (seconds)"
+  description = "Lambda Function Timeout (seconds)"
+  default     = 30
 }
 
 variable "memory_size" {
   type        = number
-  description = "The amount of memory available to the function at runtime. (MB)"
+  description = "Lambda Function Memory Size (MB)"
+  default     = 128
 }
 
 variable "source_path" {
   type        = string
-  description = "The path to the source code of the Lambda function."
+  description = "Lambda Function Source Path (ZIP file or directory)"
 }
 
 variable "environment_variables" {
   type        = map(string)
-  description = "Environment variables that are accessible from function code during execution."
+  description = "Lambda Function Environment Variables"
   default     = {}
-}
-
-variable "role_arn" {
-  type        = string
-  description = "The ARN of the IAM role that Lambda assumes when it executes your function."
 }
 
 variable "vpc_config" {
@@ -49,25 +48,25 @@ variable "vpc_config" {
     subnet_ids         = list(string)
     security_group_ids = list(string)
   })
-  description = "VPC configuration for the Lambda function."
+  description = "VPC Configuration for the Lambda function"
   default     = null
 }
 
 variable "tags" {
   type        = map(string)
-  description = "Tags to assign to the Lambda function."
+  description = "A map of tags to assign to the Lambda function."
   default     = {}
 }
 
-variable "log_retention_in_days" {
+variable "log_retention_days" {
   type        = number
-  description = "The number of days to retain logs for."
+  description = "Number of days to retain logs in CloudWatch"
   default     = 14
 }
 
 variable "layers" {
   type        = list(string)
-  description = "A list of Lambda Layer ARNs to attach to the function."
+  description = "List of Lambda Layer ARNs to attach to the function"
   default     = []
 }
 
@@ -75,4 +74,40 @@ variable "reserved_concurrent_executions" {
   type        = number
   description = "The number of concurrent executions reserved for the function."
   default     = -1
+}
+
+variable "policy_statements" {
+  type = list(object({
+    effect    = string
+    actions   = list(string)
+    resources = list(string)
+  }))
+  description = <<-EOT
+    List of policy statements to attach to the Lambda function's execution role.
+    Each statement should include the effect (Allow/Deny), actions, and resources.
+    Example:
+    [
+      {
+        effect    = "Allow"
+        actions   = ["s3:GetObject"]
+        resources = ["arn:aws:s3:::example-bucket/*"]
+      }
+    ]
+    This will create an inline policy for the Lambda function's execution role.
+  EOT
+  default     = []
+}
+
+variable "managed_policy_arns" {
+  type        = list(string)
+  description = <<-EOT
+    List of managed policy ARNs to attach to the Lambda function's execution role.
+    Example:
+    [
+      "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+      "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+    ]
+    This will attach the specified managed policies to the Lambda function's execution role.
+  EOT
+  default     = []
 }
