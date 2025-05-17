@@ -1,22 +1,20 @@
-data "archive_file" "lambda_zip" {
+data "archive_file" "source_zip" {
   type        = "zip"
-  source_file = var.source_path
+  source_dir  = var.source_path
   output_path = "${path.module}/files/${var.function_name}.zip"
 }
 
-resource "aws_lambda_function" "main" {
-  function_name                  = var.function_name
-  description                    = var.description
-  role                           = var.role_arn
-  handler                        = var.handler
-  runtime                        = var.runtime
-  timeout                        = var.timeout
-  memory_size                    = var.memory_size
-  layers                         = var.layers
-  reserved_concurrent_executions = var.reserved_concurrent_executions
+resource "aws_lambda_function" "lambda" {
+  function_name = var.function_name
+  description   = var.description
+  handler       = var.handler
+  runtime       = var.runtime
+  timeout       = var.timeout
+  memory_size   = var.memory_size
+  role          = aws_iam_role.lambda_role.arn
 
-  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
-  filename         = data.archive_file.lambda_zip.output_path
+  filename         = data.archive_file.source_zip.output_path
+  source_code_hash = data.archive_file.source_zip.output_base64sha256
 
   dynamic "environment" {
     for_each = length(var.environment_variables) > 0 ? [1] : []
@@ -33,11 +31,17 @@ resource "aws_lambda_function" "main" {
     }
   }
 
-  tags = var.tags
+  tags = merge(
+    {
+      Name        = var.function_name
+      Description = var.description
+    },
+    var.tags
+  )
 }
 
 resource "aws_cloudwatch_log_group" "lambda_log_group" {
   name              = "/aws/lambda/${var.function_name}"
-  retention_in_days = var.log_retention_in_days
+  retention_in_days = var.log_retention_days
   tags              = var.tags
 }
