@@ -1,0 +1,39 @@
+# Xcode
+DerivedData/
+build/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcscmblueprint
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xcworkspace
+
+# Swift
+*.xcodeproj/project.xcworkspace/xcuserdata
+*.xcodeproj/xcuserdata
+
+# App binary, device support
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# CocoaPods (혹시 쓸 경우)
+Pods/
+
+# Carthage (혹시 쓸 경우)
+Carthage/
+
+# Fastlane (테스트 자동화할 때 사용됨)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+
+# Preview device cache
+.preview-thumbnails/
+
+# 기타
+*.orig
+

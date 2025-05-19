@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+
+# Xcode
+*.xcworkspace
+*.xcuserdata
+*.xcodeproj/project.xcworkspace/xcuserdata
+*.xcodeproj/xcuserdata
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# User-specific files
+*.swp
+*.swo
+.idea/
+*.log
+
+# 기타
+*.plist
+
