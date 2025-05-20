@@ -7,13 +7,12 @@ module "calendar_view" {
   runtime                        = "python3.11"
   timeout                        = 10
   memory_size                    = 128
-  role_arn                       = aws_iam_role.lambda.arn
   reserved_concurrent_executions = -1
-  log_retention_in_days          = 14
+  log_retention_days             = 14
 
   vpc_config = {
-    subnet_ids         = ["subnet-0c007d254d572747", "subnet-003db35a53f2e5e76"]
-    security_group_ids = ["sg-0ed7fecfc17a051f5"]
+    subnet_ids         = [aws_subnet.public_a.id, aws_subnet.public_b.id]
+    security_group_ids = [aws_security_group.lambda_sg.id]
   }
 
   tags = {
@@ -30,13 +29,12 @@ module "create_diary" {
   runtime                        = "python3.11"
   timeout                        = 20
   memory_size                    = 256
-  role_arn                       = aws_iam_role.lambda.arn
   reserved_concurrent_executions = -1
-  log_retention_in_days          = 14
+  log_retention_days             = 14
 
   vpc_config = {
-    subnet_ids         = ["subnet-0c007d254d572747", "subnet-003db35a53f2e5e76"]
-    security_group_ids = ["sg-0ed7fecfc17a051f5"]
+    subnet_ids         = [aws_subnet.public_a.id, aws_subnet.public_b.id]
+    security_group_ids = [aws_security_group.lambda_sg.id]
   }
 
   tags = {
@@ -53,13 +51,12 @@ module "get_diary" {
   runtime                        = "python3.11"
   timeout                        = 10
   memory_size                    = 128
-  role_arn                       = aws_iam_role.lambda.arn
   reserved_concurrent_executions = -1
-  log_retention_in_days          = 14
+  log_retention_days             = 14
 
   vpc_config = {
-    subnet_ids         = ["subnet-0c007d254d572747", "subnet-003db35a53f2e5e76"]
-    security_group_ids = ["sg-0ed7fecfc17a051f5"]
+    subnet_ids         = [aws_subnet.public_a.id, aws_subnet.public_b.id]
+    security_group_ids = [aws_security_group.lambda_sg.id]
   }
 
   tags = {
@@ -76,13 +73,12 @@ module "list_diaries" {
   runtime                        = "python3.11"
   timeout                        = 10
   memory_size                    = 128
-  role_arn                       = aws_iam_role.lambda.arn
   reserved_concurrent_executions = -1
-  log_retention_in_days          = 14
+  log_retention_days             = 14
 
   vpc_config = {
-    subnet_ids         = ["subnet-0c007d254d572747", "subnet-003db35a53f2e5e76"]
-    security_group_ids = ["sg-0ed7fecfc17a051f5"]
+    subnet_ids         = [aws_subnet.public_a.id, aws_subnet.public_b.id]
+    security_group_ids = [aws_security_group.lambda_sg.id]
   }
 
   tags = {
