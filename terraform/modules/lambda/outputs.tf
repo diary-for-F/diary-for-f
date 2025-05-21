@@ -1,15 +1,15 @@
 output "function_arn" {
-  value       = aws_lambda_function.main.arn
+  value       = aws_lambda_function.lambda.arn
   description = "The ARN of the Lambda function."
 }
 
 output "function_name" {
-  value       = aws_lambda_function.main.function_name
+  value       = aws_lambda_function.lambda.function_name
   description = "The name of the Lambda function."
 }
 
 output "invoke_arn" {
-  value       = aws_lambda_function.main.invoke_arn
+  value       = aws_lambda_function.lambda.invoke_arn
   description = "The ARN that you can use to invoke the Lambda function."
 }
 
