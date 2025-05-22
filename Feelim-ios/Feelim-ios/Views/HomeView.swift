@@ -43,21 +43,23 @@ struct HomeView: View {
     ]
 
     var body: some View {
+
+        
         ZStack {
             Color(red: 0.15, green: 0.15, blue: 0.15)
                 .ignoresSafeArea()
 
-            VStack(spacing: 10) {
-                // 상단 로고 텍스트
-                Text("Feel:Im")
-                    .font(.custom("Silom", size: 32))
-                    .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.15))
-                    .padding(.top, 24)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.white)
-                            .frame(height: 40)
-                    )
+            VStack(spacing: 20) {
+                // 상단 로고
+                HStack {
+                    Spacer()
+                    Image("Logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 250)
+                        .padding(.top, 40)
+                    Spacer()
+                }
 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 64) {
@@ -75,7 +77,7 @@ struct HomeView: View {
             VStack {
                 Spacer()
                 Button(action: {
-                    // 새 일기 추가 액션
+                    // TODO : 새 일기 추가 액션
                 }) {
                     ZStack {
                         Circle()

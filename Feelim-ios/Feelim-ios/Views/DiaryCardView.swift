@@ -20,27 +20,30 @@ struct DiaryCardView: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 3.07, x: 0, y: 0)
 
             VStack(spacing: 2) {
-                // 이미지 영역 (검은 네모)
-                Rectangle()
-                    .fill(Color.black)
-                    .frame(width: 64.64, height: 64.96)
-                    .overlay(
-                        Image(emotionImageName)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 30, height: 30)
-                            .offset(y: -28) // 스티커가 사진 위에 걸치게
-                    )
-
-                // 날짜 텍스트
-                Text(dateText)
-                    .font(.custom("SF Pro Display", size: 7.67).weight(.medium))
-                    .italic()
-                    .foregroundColor(.white)
-
+                // 이미지 영역 (검은 네모 + 날짜 텍스트)
+                ZStack {
+                    Rectangle()
+                        .fill(Color.black)
+                        .frame(width: 64.64, height: 64.96)
+                        .offset(y: -3)
+                
+                    // 날짜 텍스트
+                    Text(dateText)
+                        .font(.custom("SF Pro Display", size: 7.67).weight(.medium))
+                        .italic()
+                        .foregroundColor(.white)
+                    
+                    // 감정 이모지
+                    Image(emotionImageName)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 30, height: 30)
+                        .offset(y: -33)
+                }
+                
                 // 고정 텍스트
                 Text("Polaroid 600 Format")
-                    .font(.custom("Roboto", size: 3.58))
+                    .font(.custom("Roboto", size: 5))
                     .foregroundColor(.black)
             }
         }
