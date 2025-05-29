@@ -7,8 +7,10 @@
 
 import SwiftUI
 
-struct DiaryEntry: Identifiable, Hashable {
+struct DiaryEntry: Identifiable {
     let id = UUID()
-    let date: String
-    let emotionImageName: String // "happy", "sad", ...
+    let date: String               // ex. "2025.05.01"
+    let timestamp: String          // ex. "2025.05.01 18:20"
+    let emotionImageName: String   // ex. "sad", "happy"…
+    let content: String            // 일기 본문
 }
