@@ -4,7 +4,7 @@ import SwiftUI
  사진 한 줄을 표현하는 뷰
  */
 struct PhotoLineView: View {
-    let entries: [DiaryEntry] // DiaryEntry(date: "2025.05.01", emotionImageName: .happy)
+    let entries: [DiaryEntry]
     var onTap: (DiaryEntry) -> Void
 
     var body: some View {
@@ -52,43 +52,57 @@ struct PhotoLineView: View {
                 date: "2025.05.01",
                 timestamp: "2025.05.01 18:20",
                 emotionImageName: "sad",
-                content: "요즘 들어 자꾸 불안한 생각이 머릿속을 맴돕니다."
+                content: "요즘 들어 자꾸 불안한 생각이 머릿속을 맴돕니다.",
+                aiReply: "지금 느끼는 불안은 당신이 소중한 무언가를 지키고 있다는 증거예요.",
+                aiImageName: "robot"
             ),
             .init(
                 date: "2025.05.02",
                 timestamp: "2025.05.02 09:15",
                 emotionImageName: "happy",
-                content: "아침에 상쾌한 공기를 마시며 산책했어요."
+                content: "아침에 상쾌한 공기를 마시며 산책했어요.",
+                aiReply: "아침 산책으로 기분이 한결 나아졌군요. 오늘도 좋은 하루 보내세요!",
+                aiImageName: "robot"
             ),
             .init(
                 date: "2025.05.03",
                 timestamp: "2025.05.03 12:00",
                 emotionImageName: "angry",
-                content: "회의 중에 제 의견이 반영되지 않아 답답했어요."
+                content: "회의 중에 제 의견이 반영되지 않아 답답했어요.",
+                aiReply: "답답하셨겠어요. 다음 번엔 더 좋은 피드백이 따를 거예요.",
+                aiImageName: "robot"
             ),
             .init(
                 date: "2025.05.04",
                 timestamp: "2025.05.04 20:30",
                 emotionImageName: "neutral",
-                content: "그저 평범한 하루였어요."
+                content: "그저 평범한 하루였어요.",
+                aiReply: "평범함도 때로는 큰 휴식이 되어줍니다.",
+                aiImageName: "robot"
             ),
             .init(
                 date: "2025.05.05",
                 timestamp: "2025.05.05 22:10",
                 emotionImageName: "surprised",
-                content: "회사에서 깜짝 칭찬 메시지를 받았어요!"
+                content: "회사에서 깜짝 칭찬 메시지를 받았어요!",
+                aiReply: "뜻밖의 칭찬은 정말 힘이 되죠. 축하드려요!",
+                aiImageName: "robot"
             ),
             .init(
                 date: "2025.05.06",
                 timestamp: "2025.05.06 08:45",
                 emotionImageName: "anxious",
-                content: "다음 주 발표 준비가 아직 덜 돼서 조마조마해요."
+                content: "다음 주 발표 준비가 아직 덜 돼서 조마조마해요.",
+                aiReply: "준비가 잘 되고 있어요. 자신감을 가져도 좋습니다!",
+                aiImageName: "robot"
             ),
             .init(
                 date: "2025.05.07",
                 timestamp: "2025.05.07 14:20",
                 emotionImageName: "happy",
-                content: "점심으로 맛있는 파스타를 먹었더니 기분이 좋네요."
+                content: "점심으로 맛있는 파스타를 먹었더니 기분이 좋네요.",
+                aiReply: "맛있는 음식으로 기분 전환하셨군요. 즐거운 순간이에요!",
+                aiImageName: "robot"
             )
         ],
         onTap: { entry in
