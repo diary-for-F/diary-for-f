@@ -1,14 +1,9 @@
 import json
+import os
 import pymysql
-import boto3
 
 def get_db_connection():
-    secret_name = "diary-for-f/aurora-credentials"
-    region_name = "ap-northeast-2"
-    client = boto3.client("secretsmanager", region_name=region_name)
-    response = client.get_secret_value(SecretId=secret_name)
-    secret = json.loads(response['SecretString'])
-
+    secret = json.loads(os.getenv("DB_SECRETS"))
     return pymysql.connect(
         host=secret["host"],
         port=int(secret["port"]),
@@ -20,39 +15,45 @@ def get_db_connection():
     )
 
 def lambda_handler(event, context):
-    query = event.get("queryStringParameters") or {}
-    page = int(query.get("page", 1))
-    limit = int(query.get("limit", 10))
-    offset = (page - 1) * limit
-
     try:
+        # path에서 diary_id 추출
+        path = event.get("rawPath", "")
+        parts = path.strip("/").split("/")
+        
+        if len(parts) >= 3 and parts[-1] == "ai":
+            diary_id = int(parts[-2])
+        else:
+            return {"statusCode": 400, "body": json.dumps({"error": "Invalid path format"})}
+
         conn = get_db_connection()
         cur = conn.cursor()
+
         cur.execute("""
-            SELECT id, main_emotion, created_at 
-            FROM diary_entries 
-            ORDER BY created_at DESC 
-            LIMIT %s OFFSET %s
-        """, (limit, offset))
-        rows = cur.fetchall()
+            SELECT ai_feedback, created_at
+            FROM diary_entries
+            WHERE diary_id = %s
+        """, (diary_id,))
+
+        row = cur.fetchone()
         cur.close()
         conn.close()
 
-        diaries = [
-            {
-                "id": row["id"],
-                "mainEmotion": row["main_emotion"],
-                "date": row["created_at"].date().isoformat()
-            } for row in rows
-        ]
+        if not row:
+            return {
+                "statusCode": 404,
+                "body": json.dumps({"error": "Diary not found"})
+            }
 
         return {
             "statusCode": 200,
-            "body": json.dumps(diaries)
+            "body": json.dumps({
+                "ai_feedback": row["ai_feedback"],
+                "created_at": row["created_at"].strftime("%Y-%m-%d %H:%M:%S")
+            })
         }
 
     except Exception as e:
         return {
             "statusCode": 500,
-            "body": json.dumps({ "error": str(e) })
+            "body": json.dumps({"error": str(e)})
         }

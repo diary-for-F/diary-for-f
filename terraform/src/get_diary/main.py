@@ -1,14 +1,11 @@
 import json
+import os
 import pymysql
-import boto3
+
+# DB 개체 연결
 
 def get_db_connection():
-    secret_name = "diary-for-f/aurora-credentials"
-    region_name = "ap-northeast-2"
-    client = boto3.client("secretsmanager", region_name=region_name)
-    response = client.get_secret_value(SecretId=secret_name)
-    secret = json.loads(response['SecretString'])
-
+    secret = json.loads(os.getenv("DB_SECRETS"))
     return pymysql.connect(
         host=secret["host"],
         port=int(secret["port"]),
@@ -19,46 +16,45 @@ def get_db_connection():
         cursorclass=pymysql.cursors.DictCursor
     )
 
-def lambda_handler(event, context):
-    path = event.get("path")
-    diary_id = path.split("/")[-1]
+# 단위 읽기: diary_id 입력 받아서 검색 
 
+def lambda_handler(event, context):
     try:
+        # 특정 ID 검색 (ex. /api/diary/4)
+        path = event.get("rawPath") or event.get("path", "")
+        diary_id = int(path.rstrip("/").split("/")[-1])
+
         conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT id, content, selected_emotions, selected_levels,
-                   predicted_emotions, predicted_levels, ai_feedback, created_at
-            FROM diary_entries
-            WHERE id = %s
+        cursor = conn.cursor()
+
+        # diary_entries 역시 발견
+        cursor.execute("""
+            SELECT d.content, d.created_at, e.name AS main_emotion
+            FROM diary_entries d
+            JOIN emotions e ON d.main_emotion_id = e.emotion_id
+            WHERE d.diary_id = %s
         """, (diary_id,))
-        row = cur.fetchone()
-        cur.close()
-        conn.close()
+
+        row = cursor.fetchone()
 
         if not row:
-            raise Exception("Diary not found")
+            return {
+                "statusCode": 404,
+                "body": json.dumps({"error": "Diary not found"})
+            }
 
         return {
             "statusCode": 200,
             "body": json.dumps({
-                "id": row["id"],
+                "id": diary_id,
                 "content": row["content"],
-                "selectedEmotions": [
-                    { "emotion": e, "level": l }
-                    for e, l in zip(row["selected_emotions"], row["selected_levels"])
-                ],
-                "topEmotions": [
-                    { "emotion": e, "score": s }
-                    for e, s in zip(row["predicted_emotions"], row["predicted_levels"])
-                ],
-                "message": row["ai_feedback"],
+                "mainEmotion": row["main_emotion"],
                 "createdAt": row["created_at"].isoformat()
             })
         }
 
     except Exception as e:
         return {
-            "statusCode": 404,
-            "body": json.dumps({ "error": str(e) })
-        }   
+            "statusCode": 500,
+            "body": json.dumps({"error": str(e)})
+        }

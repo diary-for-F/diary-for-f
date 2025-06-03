@@ -4,6 +4,6 @@
 resource "aws_lambda_layer_version" "mysql_connection" {
   layer_name       = "mysql_connection"
   description      = "Layer to connect MySQL. (Including PyMySQL)"
-  filename         = "${path.module}/src/layers/mysql_conn/layer.zip"
-  source_code_hash = filebase64sha256("${path.module}/src/layers/mysql_conn/layer.zip")
+  filename         = "${path.module}/../layers/mysql_conn.zip"
+  source_code_hash = filebase64sha256("${path.module}/../layers/mysql_conn.zip")
 }

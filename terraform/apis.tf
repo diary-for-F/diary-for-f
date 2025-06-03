@@ -10,6 +10,10 @@ module "calendar_view" {
   reserved_concurrent_executions = -1
   log_retention_days             = 14
 
+  layers = [
+    aws_lambda_layer_version.mysql_connection.arn
+  ]
+
   vpc_config = {
     subnet_ids         = [aws_subnet.public_a.id, aws_subnet.public_b.id]
     security_group_ids = [aws_security_group.lambda_sg.id]
@@ -23,14 +27,22 @@ module "calendar_view" {
 module "create_diary" {
   source                         = "./modules/lambda"
   function_name                  = "create_diary"
-  description                    = "Create diary with GPT"
+  description                    = "Create diary with Bedrock"
   source_path                    = "${path.module}/src/create_diary"
   handler                        = "main.lambda_handler"
   runtime                        = "python3.11"
-  timeout                        = 20
-  memory_size                    = 256
+  timeout                        = 60
+  memory_size                    = 512
   reserved_concurrent_executions = -1
   log_retention_days             = 14
+
+  layers = [
+    aws_lambda_layer_version.mysql_connection.arn
+  ]
+
+  environment_variables = {
+    DB_SECRETS = data.aws_secretsmanager_secret_version.rds_credentials.secret_string
+  }
 
   vpc_config = {
     subnet_ids         = [aws_subnet.public_a.id, aws_subnet.public_b.id]
@@ -54,6 +66,10 @@ module "get_diary" {
   reserved_concurrent_executions = -1
   log_retention_days             = 14
 
+  layers = [
+    aws_lambda_layer_version.mysql_connection.arn
+  ]
+
   vpc_config = {
     subnet_ids         = [aws_subnet.public_a.id, aws_subnet.public_b.id]
     security_group_ids = [aws_security_group.lambda_sg.id]
@@ -75,6 +91,10 @@ module "list_diaries" {
   memory_size                    = 128
   reserved_concurrent_executions = -1
   log_retention_days             = 14
+
+  layers = [
+    aws_lambda_layer_version.mysql_connection.arn
+  ]
 
   vpc_config = {
     subnet_ids         = [aws_subnet.public_a.id, aws_subnet.public_b.id]

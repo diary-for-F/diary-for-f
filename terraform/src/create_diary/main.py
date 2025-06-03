@@ -1,17 +1,10 @@
 import json
+import os
 import pymysql
 import boto3
-import openai
 
 def get_db_connection():
-    secret_name = "diary-for-f/aurora-credentials"
-    region_name = "ap-northeast-2"
-    client = boto3.client("secretsmanager", region_name=region_name)
-    response = client.get_secret_value(SecretId=secret_name)
-    secret = json.loads(response['SecretString'])
-
-    openai.api_key = secret["openai_api_key"]
-
+    secret = json.loads(os.getenv("DB_SECRETS"))
     return pymysql.connect(
         host=secret["host"],
         port=int(secret["port"]),
@@ -20,64 +13,101 @@ def get_db_connection():
         db=secret["dbname"],
         charset="utf8mb4",
         cursorclass=pymysql.cursors.DictCursor
-    ), secret
-
-def analyze_emotion(content, selected_emotions):
-    emotion_str = ", ".join([f'{e["emotion"]}({e["level"]})' for e in selected_emotions])
-    prompt = f"""
-    사용자의 감정일기를 분석해서 아래와 같이 응답해주세요:
-    {{
-      "results": [
-        {{ "emotion": "슬픔", "score": 85 }},
-        ...
-      ],
-      "message": "위로 문장"
-    }}
-
-    선택 감정: {emotion_str}
-    내용: {content}
-    """
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": "감정 분석 전문가로 행동해줘."},
-            {"role": "user", "content": prompt}
-        ]
     )
-    parsed = json.loads(response.choices[0].message["content"])
+
+def get_emotion_id(cursor, name):
+    cursor.execute("SELECT emotion_id FROM emotions WHERE name = %s", (name,))
+    result = cursor.fetchone()
+    if not result:
+        raise ValueError(f"Emotion '{name}' not found in emotions table.")
+    return result["emotion_id"]
+
+def analyze_emotion_with_bedrock(content, selected_emotions):
+    # Claude에게 영어 감정명을 요구
+    prompt = f"""
+Please analyze the following diary and respond in JSON format as below:
+{{
+  "results": [
+    {{ "emotion": "sadness", "score": 85 }},
+    {{ "emotion": "anger", "score": 70 }},
+    {{ "emotion": "joy", "score": 55 }}
+  ],
+  "message": "위로 문장을 한국어로 작성해주세요."
+}}
+
+Selected Emotions: {", ".join([f'{e["emotion"]}({e["level"]})' for e in selected_emotions])}
+Content: {content}
+""".strip()
+
+    body = {
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": 1024,
+        "temperature": 0.7,
+        "messages": [
+            {
+                "role": "user",
+                "content": [{"type": "text", "text": prompt}]
+            }
+        ]
+    }
+
+    client = boto3.client("bedrock-runtime", region_name="ap-northeast-2")
+    response = client.invoke_model(
+        modelId="anthropic.claude-3-5-sonnet-20240620-v1:0",
+        body=json.dumps(body),
+        contentType="application/json",
+        accept="application/json"
+    )
+
+    result = json.loads(response["body"].read())
+    parsed = json.loads(result["content"][0]["text"].strip())
     return parsed["results"], parsed["message"]
 
+def insert_emotion_levels(cursor, emotions, diary_id, is_prediction=False):
+    for e in emotions:
+        name = e["emotion"]
+        level = e["score"] if is_prediction else e["level"]
+        emotion_id = get_emotion_id(cursor, name)
+        cursor.execute(
+            "INSERT INTO diary_entry_emotions (emotion_id, diary_id, level) VALUES (%s, %s, %s)",
+            (emotion_id, diary_id, level)
+        )
+
 def lambda_handler(event, context):
-    body = json.loads(event["body"])
-    content = body.get("content")
-    selected = body.get("selectedEmotions")
-
-    if not content or not selected:
-        return { "statusCode": 400, "body": "Missing content or emotions" }
-
     try:
-        conn, secret = get_db_connection()
-        top_emotions, message = analyze_emotion(content, selected)
+        body = event.get("body", event)
+        if isinstance(body, str):
+            body = json.loads(body)
 
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO diary_entries (
-                content, selected_emotions, selected_levels,
-                predicted_emotions, predicted_levels,
-                main_emotion, ai_feedback
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (
-            content,
-            [e["emotion"] for e in selected],
-            [e["level"] for e in selected],
-            [e["emotion"] for e in top_emotions],
-            [e["score"] for e in top_emotions],
-            top_emotions[0]["emotion"],
-            message
-        ))
+        content = body.get("content")
+        selected = body.get("selectedEmotions")
+
+        if not content or not selected:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"error": "Missing content or selectedEmotions"})
+            }
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # AI 분석 요청
+        top_emotions, message = analyze_emotion_with_bedrock(content, selected)
+        main_emotion_id = get_emotion_id(cursor, top_emotions[0]["emotion"])
+
+        # 일기 저장
+        cursor.execute(
+            "INSERT INTO diary_entries (content, ai_feedback, main_emotion_id) VALUES (%s, %s, %s)",
+            (content, message, main_emotion_id)
+        )
+        diary_id = cursor.lastrowid
+
+        # 감정 레벨 저장
+        insert_emotion_levels(cursor, selected, diary_id, is_prediction=False)
+        insert_emotion_levels(cursor, top_emotions, diary_id, is_prediction=True)
+
         conn.commit()
-        diary_id = cur.lastrowid
-        cur.close()
+        cursor.close()
         conn.close()
 
         return {
@@ -88,8 +118,9 @@ def lambda_handler(event, context):
                 "message": message
             })
         }
+
     except Exception as e:
         return {
             "statusCode": 500,
-            "body": json.dumps({ "error": str(e) })
+            "body": json.dumps({"error": str(e)})
         }
