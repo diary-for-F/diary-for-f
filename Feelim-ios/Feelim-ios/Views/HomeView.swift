@@ -238,7 +238,7 @@ struct HomeView: View {
     
     // 새 일기 작성 화면 표시 여부
     @State private var isPresentingWriteView = false
-    
+  
     // 로딩 화면 표시 여부
     @State private var isPresentingDevelopingView = false
 
