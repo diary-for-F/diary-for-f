@@ -238,6 +238,9 @@ struct HomeView: View {
     
     // 새 일기 작성 화면 표시 여부
     @State private var isPresentingWriteView = false
+    
+    // 로딩 화면 표시 여부
+    @State private var isPresentingDevelopingView = false
 
     var body: some View {
         
@@ -307,6 +310,12 @@ struct HomeView: View {
                             photoLines[0].insert(newEntry, at: 0)
                         }
                         isPresentingWriteView = false
+                        isPresentingDevelopingView = true
+                        
+                        // (임시) 로딩 7초 후 자동 닫기
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 7) {
+                            isPresentingDevelopingView = false
+                        }
                     }
                     , onCancel: {
                         isPresentingWriteView = false
@@ -335,6 +344,12 @@ struct HomeView: View {
                     .onTapGesture { /* 아무 동작 없음 */ }
             }
         }
+        
+        // 로딩 화면 모달
+        .fullScreenCover(isPresented: $isPresentingDevelopingView) {
+            DevelopingView()
+        }
+        
     }
 }
 
