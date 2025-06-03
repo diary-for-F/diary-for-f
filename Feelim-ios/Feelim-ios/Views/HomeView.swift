@@ -9,7 +9,7 @@ import SwiftUI
 
 struct HomeView: View {
     // 여러 줄의 감정 일기들 샘플
-    let photoLines: [[DiaryEntry]] = [
+    @State private var photoLines: [[DiaryEntry]] = [
         [
             DiaryEntry(
                 date: "2025.05.01",
@@ -233,7 +233,11 @@ struct HomeView: View {
     ]
 
     
+    // 특정 일기 선택 여부
     @State private var selectedEntry : DiaryEntry?
+    
+    // 새 일기 작성 화면 표시 여부
+    @State private var isPresentingWriteView = false
 
     var body: some View {
         
@@ -254,10 +258,12 @@ struct HomeView: View {
                     Spacer()
                 }
 
+                // 일기 목록
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 64) {
                         ForEach(photoLines.indices, id: \.self) { index in
                             PhotoLineView(entries: photoLines[index]) { entry in
+                                // 클릭된 일기 선택
                                 selectedEntry = entry
                             }
                         }
@@ -272,7 +278,7 @@ struct HomeView: View {
             VStack {
                 Spacer()
                 Button(action: {
-                    // TODO : 새 일기 추가 액션
+                    isPresentingWriteView = true
                 }) {
                     ZStack {
                         Circle()
@@ -284,6 +290,31 @@ struct HomeView: View {
                     }
                 }
                 .padding(.bottom, 30)
+            }
+            
+            // 일기 작성 모달
+            if isPresentingWriteView {
+                Color.black.opacity(0.6)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        isPresentingWriteView = false
+                    }
+                DiaryWriteView(
+                    onSave: { newEntry in
+                        if photoLines.isEmpty {
+                            photoLines = [[newEntry]]
+                        } else {
+                            photoLines[0].insert(newEntry, at: 0)
+                        }
+                        isPresentingWriteView = false
+                    }
+                    , onCancel: {
+                        isPresentingWriteView = false
+                    }
+                )
+                .frame(width: 394, height: 568.60)
+                .shadow(color: Color.black.opacity(0.1), radius: 16, x: 0, y: 0)
+                .zIndex(1)
             }
             
             // 특정 일기 조회 모달
