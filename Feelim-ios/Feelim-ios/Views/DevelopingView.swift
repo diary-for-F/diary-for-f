@@ -38,9 +38,9 @@ struct DevelopingView: View {
                 
                 // 텍스트와 점 로딩
                 VStack(spacing: 10) {
-                    Text("사진을 인화하는 중입니다.")
+                    Text("사진을 인화하는 중입니다.\n\n")
                         .foregroundColor(.white)
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(Font.custom("Arial", size: 20))
                     
                     HStack(spacing: 8) {
                         ForEach(0..<totalSteps, id: \.self) { index in
