@@ -16,9 +16,16 @@ def get_db_connection():
 # 단위 읽기: diary_id 입력 받아서 검색 
 def lambda_handler(event, context):
     try:
-        # 특정 ID 검색 (ex. /api/diary/4)
-        path = event.get("rawPath") or event.get("path", "")
-        diary_id = int(path.rstrip("/").split("/")[-1])
+        # query parameter에서 diary ID 추출
+        query_params = event.get("queryStringParameters", {})
+        diary_id = query_params.get("id")
+        
+        if diary_id is None:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"error": "Diary ID is invalid or not provided."})
+            }
+        
         conn = get_db_connection()
         cursor = conn.cursor()
         # diary_entries 역시 발견
