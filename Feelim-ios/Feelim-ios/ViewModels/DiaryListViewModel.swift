@@ -13,6 +13,7 @@ class DiaryListViewModel: ObservableObject {
     
     func loadDiaries() async {
         do {
+            // TODO : 무한 스크롤 구현
             let dtos = try await APIClient.shared.fetchDiaries(page: 1, limit: 30)
             let entries = dtos.map { dto -> DiaryEntry in
                 DiaryEntry(

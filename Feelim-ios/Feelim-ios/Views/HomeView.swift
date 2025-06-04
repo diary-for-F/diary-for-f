@@ -16,7 +16,7 @@ struct HomeView: View {
     
     // 새 일기 작성 화면 표시 여부
     @State private var isPresentingWriteView = false
-
+    
     // 로딩 화면 표시 여부
     @State private var isPresentingDevelopingView = false
 
@@ -78,17 +78,21 @@ struct HomeView: View {
                         isPresentingWriteView = false
                     }
                 DiaryWriteView(
-                    onSave: { newEntry in
-                        viewModel.diaryEntries.insert(newEntry, at: 0)
-                        isPresentingWriteView = false
-                        isPresentingDevelopingView = true
-                        
-                        // (임시) 로딩 7초 후 자동 닫기
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 7) {
+                    onStartSave: {
+                        // 로딩화면 띄우기
+                        DispatchQueue.main.async {
+                            isPresentingWriteView = false
+                            isPresentingDevelopingView = true
+                        }
+                    },
+                    onFinishSave: {
+                        // 다시 전체 일기 불러오기 + 로딩화면 닫기
+                        Task { @MainActor in
+                            await viewModel.loadDiaries()
                             isPresentingDevelopingView = false
                         }
-                    }
-                    , onCancel: {
+                    },
+                    onCancel: {
                         isPresentingWriteView = false
                     }
                 )
@@ -115,12 +119,10 @@ struct HomeView: View {
                     .onTapGesture { /* 아무 동작 없음 */ }
             }
         }
-        
-        // 로딩 화면 모달
+        // 로딩 화면 표시
         .fullScreenCover(isPresented: $isPresentingDevelopingView) {
             DevelopingView()
         }
-        
          // 전체 일기 조회 API 호출
         .task {
             await viewModel.loadDiaries()
