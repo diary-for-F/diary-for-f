@@ -1,7 +1,7 @@
 import json
 import os
 import pymysql
-
+#일기 뒷면 조회
 def get_db_connection():
     secret = json.loads(os.getenv("DB_SECRETS"))
     return pymysql.connect(

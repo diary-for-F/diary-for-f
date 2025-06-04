@@ -1,7 +1,7 @@
 import json
 import os
 import pymysql
-
+#일기목록조회
 def get_db_connection():
     secret = json.loads(os.getenv("DB_SECRETS"))
     return pymysql.connect(
