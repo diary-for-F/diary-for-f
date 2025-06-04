@@ -16,7 +16,7 @@ struct HomeView: View {
     
     // 새 일기 작성 화면 표시 여부
     @State private var isPresentingWriteView = false
-    
+
     // 로딩 화면 표시 여부
     @State private var isPresentingDevelopingView = false
 
@@ -121,11 +121,10 @@ struct HomeView: View {
             DevelopingView()
         }
         
-        // 전체 일기 조회 API 호출
+         // 전체 일기 조회 API 호출
         .task {
             await viewModel.loadDiaries()
         }
-        
     }
 }
 
