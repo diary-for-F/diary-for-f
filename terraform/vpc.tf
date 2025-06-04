@@ -87,3 +87,49 @@ resource "aws_route_table_association" "public_b" {
   subnet_id      = aws_subnet.public_b.id
   route_table_id = aws_route_table.public.id
 }
+
+resource "aws_vpc_endpoint" "bedrock" {
+  vpc_id            = aws_vpc.main.id
+  service_name      = "com.amazonaws.ap-northeast-2.bedrock"
+  vpc_endpoint_type = "Interface"
+
+  subnet_ids = [
+    aws_subnet.public_a.id,
+    aws_subnet.public_b.id
+  ]
+
+  security_group_ids = [
+    aws_security_group.vpce.id,
+    aws_security_group.lambda_sg.id
+  ]
+
+  private_dns_enabled = true
+
+  tags = {
+    Name        = "diary-for-f-bedrock-vpc-endpoint"
+    Description = "VPC endpoint for Bedrock service"
+  }
+}
+
+resource "aws_vpc_endpoint" "bedrock_runtime" {
+  vpc_id            = aws_vpc.main.id
+  service_name      = "com.amazonaws.ap-northeast-2.bedrock-runtime"
+  vpc_endpoint_type = "Interface"
+
+  subnet_ids = [
+    aws_subnet.public_a.id,
+    aws_subnet.public_b.id
+  ]
+
+  security_group_ids = [
+    aws_security_group.vpce.id,
+    aws_security_group.lambda_sg.id
+  ]
+
+  private_dns_enabled = true
+
+  tags = {
+    Name        = "diary-for-f-bedrock-bedrock-vpc-endpoint"
+    Description = "VPC endpoint for Bedrock Bedrock service"
+  }
+}
