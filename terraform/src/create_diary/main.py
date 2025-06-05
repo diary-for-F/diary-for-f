@@ -26,17 +26,25 @@ def get_emotion_id(cursor, name):
 
 # Claude에 감정 분석 요청
 def analyze_emotion_with_bedrock(content, selected_emotions):
-    prompt = f"""
-Please analyze the following diary content and respond in JSON format like the example below.
+    # Claude에 허용할 감정 목록을 명시
+    allowed_emotions = ["joy", "sadness", "anger", "fear", "surprise", "neutral"]
 
-Return:
+    prompt = f"""
+당신은 따뜻한 말로 사람의 감정을 공감하고 위로하는 감성적인 심리상담사입니다.
+사용자가 작성한 일기에는 지치고 힘든 감정이 담겨 있습니다.
+
+다음 일기 내용을 분석하여 다음을 수행해 주세요:
+1. 감정 분석 결과를 joy, sadness, anger, fear, surprise, neutral 중 최대 3개까지 선정하고 각각 0~100 점수로 정리
+2. 충분히 공감한 뒤, 진심을 담아 따뜻한 위로 문장을 2~3줄로 한국어로 작성 (형식: 존댓말, 진심 어린 표현, 감정적 거리감 없음)
+
+반드시 아래 JSON 형식으로 응답하세요:
 {{
   "results": [
     {{ "emotion": "sadness", "score": 85 }},
     {{ "emotion": "anger", "score": 70 }},
     {{ "emotion": "joy", "score": 55 }}
   ],
-  "message": "2~3줄로 구성된 감성적인 위로 문장을 한국어로 작성해주세요. 마치 힘든 친구를 진심으로 위로하듯 따뜻하고 공감 가는 말로 부탁드립니다."
+  "message": "진심이 느껴지는 위로 문장을 한국어로 작성해 주세요."
 }}
 
 User-selected Emotions (with their levels): {", ".join([f'{e["emotion"]}({e["level"]})' for e in selected_emotions])}
