@@ -14,6 +14,7 @@ class APIClient {
     
     private let baseURL = "https://1fed05tpvg.execute-api.ap-northeast-2.amazonaws.com/prod"
     
+    // 전체 일기 조회
     func fetchDiaries(page: Int, limit: Int) async throws -> [DiaryDTO] {
         let urlString = "\(baseURL)/diaries?page=\(page)&limit=\(limit)"
         print("API 호출 URL: \(urlString)")
@@ -32,6 +33,7 @@ class APIClient {
         return decodedResponse
     }
     
+    // 일기 작성
     func postDiary(request: DiaryWriteRequest) async throws -> DiaryWriteResponse {
         let urlString = "\(baseURL)/diary"
         print("API 호출 URL: \(urlString)")
@@ -76,7 +78,7 @@ class APIClient {
         }
     }
     
-    // 일기 상세 조회
+    // 특정 일기 상세 조회
     func fetchDiaryDetail(id: String) async throws -> DiaryDetailResponse {
         let urlString = "\(baseURL)/diary?id=\(id)"
         print("일기 상세 API 호출 URL: \(urlString)")
@@ -96,5 +98,30 @@ class APIClient {
         let detailDTO = try JSONDecoder().decode(DiaryDetailResponse.self, from: data)
         print("일기 상세 디코딩 성공: \(detailDTO)")
         return detailDTO
+    }
+    
+    // 특정 일기 AI 답변 조회
+        func fetchAIFeedback(id: String) async throws -> DiaryAIFeedbackResponse {
+            let urlString = "\(baseURL)/ai-feedback?id=\(id)"
+            
+            guard let url = URL(string: urlString) else {
+                throw URLError(.badURL)
+            }
+
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                let bodyString = String(data: data, encoding: .utf8) ?? "(응답 body 파싱 실패)"
+                print("[AI 피드백 조회] 서버 오류 상태코드: \((response as? HTTPURLResponse)?.statusCode ?? -1)")
+                print("서버 응답 내용: \(bodyString)")
+                throw URLError(.badServerResponse)
+            }
+
+            let decoder = JSONDecoder()
+            let aiResponse = try decoder.decode(DiaryAIFeedbackResponse.self, from: data)
+            print("[AI 피드백 조회] 디코딩 성공: \(aiResponse)")
+            
+            return aiResponse
+        }
     }
 }

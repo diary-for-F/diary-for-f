@@ -42,8 +42,10 @@ struct HomeView: View {
                 // 일기 목록
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 64) {
-                        PhotoLineView(entries: viewModel.diaryEntries) { entry in
-                            selectedDiaryId = entry.id
+                        ForEach(viewModel.groupedDiaryEntries, id: \.weekOfYear) { group in
+                            PhotoLineView(entries: group.entries) { entry in
+                                selectedDiaryId = entry.id
+                            }
                         }
                     }
                     .padding(.vertical, 0)
