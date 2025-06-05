@@ -13,13 +13,27 @@ class DiaryDetailViewModel: ObservableObject {
     @Published var content: String = ""
     @Published var mainEmotion: String = ""
     @Published var createdAt: Date = Date()
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String? = nil
+
+    @Published var aiReply: String = ""
+    @Published var aiCreatedAt: Date = Date()
     
-    /// 서버의 "2025-06-04T18:16:27" 같은 형식을 파싱할 포맷터
+    @Published var isLoading: Bool = false
+    @Published var isLoadingAI: Bool = false
+    @Published var errorMessage: String? = nil
+    @Published var aiErrorMessage: String? = nil
+    
+    /// 서버의 "2025-06-04T18:16:27" 형식을 파싱할 포맷터
     private let serverDateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }()
+    
+    /// AI 피드백에서 주는 "yyyy-MM-dd HH:mm:ss" 형식을  파싱할 포맷터
+    private let aiDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd HH:mm:ss"
         f.locale = Locale(identifier: "en_US_POSIX")
         return f
     }()
@@ -61,6 +75,27 @@ class DiaryDetailViewModel: ObservableObject {
         }
     }
     
+    /// AI 답변과 생성 시각 받기
+    func loadAIFeedback(id: String) async {
+        isLoadingAI = true
+        defer { isLoadingAI = false }
+
+        do {
+            let dto = try await APIClient.shared.fetchAIFeedback(id: id)
+            aiReply = dto.ai_feedback
+            // "2025-06-04 12:44:53" 문자열 → Date로 변환
+            if let parsed = aiDateFormatter.date(from: dto.created_at) {
+                aiCreatedAt = parsed
+            } else {
+                print("AI created_at 파싱 실패: \(dto.created_at)")
+                aiCreatedAt = Date()
+            }
+        } catch {
+            aiErrorMessage = error.localizedDescription
+            print("AI 피드백 조회 오류: \(error)")
+        }
+    }
+    
     /// “yyyy.MM.dd” 형식으로 포맷팅된 문자열
     var formattedDate: String {
         displayDateFormatter.string(from: createdAt)
@@ -70,4 +105,15 @@ class DiaryDetailViewModel: ObservableObject {
     var formattedTime: String {
         displayTimeFormatter.string(from: createdAt)
     }
+    
+    /// AI createdAt을 "yyyy.MM.dd" 형식 문자열로 반환
+    var formattedAIDate: String {
+        displayDateFormatter.string(from: aiCreatedAt)
+    }
+
+    /// AI createdAt을 "HH:mm" 형식 문자열로 반환
+    var formattedAITime: String {
+        displayTimeFormatter.string(from: aiCreatedAt)
+    }
+
 }

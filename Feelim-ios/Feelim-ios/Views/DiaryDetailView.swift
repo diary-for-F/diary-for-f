@@ -42,8 +42,12 @@ struct DiaryDetailView: View {
             isFlipped.toggle()
         }
         .onAppear {
-            // 뷰가 나타나면 API 호출
-            Task { await viewModel.loadDetail(id: diaryId) }
+            Task {
+                // 사용자 일기 상세 조회
+                await viewModel.loadDetail(id: diaryId)
+                // AI 피드백 조회
+                await viewModel.loadAIFeedback(id: diaryId)
+            }
         }
     }
     
@@ -123,25 +127,45 @@ struct DiaryDetailView: View {
                 .offset(y: 29.7)
                 .shadow(color: Color.black.opacity(0.10), radius: 16.52)
 
-            // 실제 서버에서 AI 답장을 내려준다면, ViewModel에 `aiReply` 프로퍼티를 추가하고 바인딩하세요.
-            // 현재는 placeholder 텍스트만 띄워둡니다.
-            ScrollView {
-                Text("AI가 생성한 답장 텍스트를 서버에서 받아와 여기에 표시하세요.")
-                    .font(.custom("SF Pro Display", size: 20).weight(.medium))
-                    .lineSpacing(29)
-                    .italic(true)
-                    .foregroundColor(.black)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 32)
+            if viewModel.isLoadingAI {
+            // AI 로딩 중 인디케이터
+            ProgressView()
+                .scaleEffect(1.5)
+                .foregroundColor(.gray)
             }
-            .frame(width: 349, height: 340)
-            .offset(x: -1, y: 30)
-
-            // AI 답장 생성 시점 타임스탬프: 서버가 내려준 createdAt(유저 일기 생성 시각) 사용
-            Text("\(viewModel.formattedDate) \(viewModel.formattedTime)")
-                .font(.custom("Roboto", size: 15))
+            else if let aiError = viewModel.aiErrorMessage {
+                // AI 호출 에러 시 에러 메시지
+                Text("AI Error: \(aiError)")
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+                    .padding()
+            }
+            else {
+                // 정상적으로 받아온 AI 위로 메시지
+                ScrollView {
+                    Text(viewModel.aiReply)
+                        .font(.custom("Nanum Pen", size: 26).weight(.medium))
+                        .lineSpacing(29)
+                        .italic(true)
+                        .foregroundColor(.black)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 32)
+                }
+                .frame(width: 349, height: 340)
+                .offset(x: -1, y: 30)
+                
+            // AI 답변 생성 시각 (YYYY.MM.DD HH:mm)
+            Text("\(viewModel.formattedAIDate) \(viewModel.formattedAITime)")
+                .font(.custom("Nanum Pen", size: 23))
                 .foregroundColor(.black)
                 .offset(x: -1, y: 270)
+            }
+            /// 감정 이모지
+            Image("robot")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 90, height: 90)
+                .offset(y: -260)
         }
     }
 }
