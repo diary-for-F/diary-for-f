@@ -28,9 +28,9 @@ struct DiaryWriteView: View {
     }()
 
     @State private var content: String = ""
-    @State private var selectedEmotion: String = "happy"
+    @State private var selectedEmotion: String = "joy"
     private let maxCharacters = 150
-    private let emotions = ["sad", "neutral", "happy", "angry", "anxious", "surprised"]
+    private let emotions = ["sadness", "neutral", "joy", "anger", "fear", "surprise"]
 
     var body: some View {
         ZStack {
@@ -138,16 +138,7 @@ struct DiaryWriteView: View {
     }
     
     private func writeDiaryToServer() async {
-        // 감정 enum → 서버로 보내는 emotion으로 변환
-        let emotionMap: [String: String] = [
-            "sad": "sadness",
-            "neutral": "neutral",
-            "happy": "happiness",
-            "angry": "anger",
-            "anxious": "fear",
-            "surprised": "surprise"
-        ]
-        let selectedEmotionCode = emotionMap[selectedEmotion] ?? "happiness"
+        let selectedEmotionCode = selectedEmotion ?? "joy"
 
         let emotions = [
             SelectedEmotion(emotion: selectedEmotionCode, level: 80)

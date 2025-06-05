@@ -11,9 +11,9 @@ struct HomeView: View {
     // 작성된 일기 조회
     @StateObject private var viewModel = DiaryListViewModel()
     
-    // 특정 일기 선택 여부
-    @State private var selectedEntry : DiaryEntry?
-    
+    // 특정 일기 선택 여부 (id만 저장)
+    @State private var selectedDiaryId: String?
+
     // 새 일기 작성 화면 표시 여부
     @State private var isPresentingWriteView = false
     
@@ -43,7 +43,7 @@ struct HomeView: View {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 64) {
                         PhotoLineView(entries: viewModel.diaryEntries) { entry in
-                            selectedEntry = entry
+                            selectedDiaryId = entry.id
                         }
                     }
                     .padding(.vertical, 0)
@@ -102,21 +102,19 @@ struct HomeView: View {
             }
             
             // 특정 일기 조회 모달
-            if let entry = selectedEntry {
-                // 어두운 배경
+            if let diaryId = selectedDiaryId {
                 Color.black.opacity(0.6)
                     .ignoresSafeArea()
                     .onTapGesture {
-                        withAnimation { selectedEntry = nil }
+                        withAnimation { selectedDiaryId = nil }
                     }
 
-                // 일기 상세 뷰
-                DiaryDetailView(entry: entry)
+                // 새로 생성된 API기반 DiaryDetailView에 diaryId만 넘겨줌
+                DiaryDetailView(diaryId: diaryId)
                     .frame(width: 350, height: 500)
                     .shadow(color: Color.black.opacity(0.10), radius: 16.52, x: 0, y: 0)
                     .zIndex(1)
-                    // 카드 자체 탭은 막아서 배경 탭만 동작하게
-                    .onTapGesture { /* 아무 동작 없음 */ }
+                    .onTapGesture { /* 카드 탭 방지 */ }
             }
         }
         // 로딩 화면 표시

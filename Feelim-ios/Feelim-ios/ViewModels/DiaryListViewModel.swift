@@ -17,9 +17,10 @@ class DiaryListViewModel: ObservableObject {
             let dtos = try await APIClient.shared.fetchDiaries(page: 1, limit: 30)
             let entries = dtos.map { dto -> DiaryEntry in
                 DiaryEntry(
+                    id: String(dto.id),
                     date: String(dto.createdAt.prefix(10)),
                     timestamp: dto.createdAt,
-                    emotionImageName: emotionImageName(for: dto.mainEmotion),
+                    emotionImageName: dto.mainEmotion,
                     content: dto.content,
                     aiReply: "",
                     aiImageName: "robot"
@@ -30,18 +31,6 @@ class DiaryListViewModel: ObservableObject {
             }
         } catch {
             print("Error loading diaries: \(error)")
-        }
-    }
-    
-    private func emotionImageName(for emotion: String) -> String {
-        switch emotion.lowercased() {
-        case "sadness": return "sad"
-        case "happiness": return "happy"
-        case "anxiety": return "anxious"
-        case "anger": return "angry"
-        case "neutral": return "neutral"
-        case "surprise": return "surprised"
-        default: return "happy"
         }
     }
 }
