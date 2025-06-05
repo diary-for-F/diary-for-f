@@ -9,7 +9,7 @@ import SwiftUI
 
 struct DiaryCardView: View {
     let dateText: String
-    let emotionImageName: String // 예) "happy", "sad" from Assets
+    let emotionImageName: String // 예) "joy", "sadness"
 
     var body: some View {
         ZStack {
@@ -52,5 +52,5 @@ struct DiaryCardView: View {
 }
 
 #Preview {
-    DiaryCardView(dateText: "2025.05.01", emotionImageName: "happy")
+    DiaryCardView(dateText: "2025.05.01", emotionImageName: "joy")
 }

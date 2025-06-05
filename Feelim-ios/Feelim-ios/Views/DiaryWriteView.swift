@@ -9,8 +9,11 @@ import SwiftUI
 
 // 새 일기를 작성하는 모달 뷰
 struct DiaryWriteView: View {
-    var onSave: (DiaryEntry) -> Void
+    var onStartSave: () -> Void
+    var onFinishSave: () -> Void
     var onCancel: () -> Void
+    
+    @StateObject private var viewModel = DiaryWriteViewModel()
 
     private let now = Date()
     private let dateFormatter: DateFormatter = {
@@ -25,9 +28,9 @@ struct DiaryWriteView: View {
     }()
 
     @State private var content: String = ""
-    @State private var selectedEmotion: String = "happy"
+    @State private var selectedEmotion: String = "joy"
     private let maxCharacters = 150
-    private let emotions = ["sad", "neutral", "happy", "angry", "anxious", "surprised"]
+    private let emotions = ["sadness", "neutral", "joy", "anger", "fear", "surprise"]
 
     var body: some View {
         ZStack {
@@ -106,16 +109,12 @@ struct DiaryWriteView: View {
                 }
                 
                 Button(action: {
-                    let emotionIndex = emotions.firstIndex(of: selectedEmotion) ?? 2
-                    let newEntry = DiaryEntry(
-                        date: dateFormatter.string(from: now),
-                        timestamp: timeFormatter.string(from: now),
-                        emotionImageName: emotions[emotionIndex],
-                        content: content.trimmingCharacters(in: .whitespacesAndNewlines),
-                        aiReply: "",
-                        aiImageName: "robot"
-                    )
-                    onSave(newEntry)
+                    onStartSave()
+                    
+                    // 서버 호출 비동기로 실행
+                    Task {
+                        await writeDiaryToServer()
+                    }
                 }) {
                     Text("저장")
                         .font(.custom("SF Pro Display", size: 16).weight(.bold))
@@ -137,22 +136,23 @@ struct DiaryWriteView: View {
             }
         }
     }
-}
+    
+    private func writeDiaryToServer() async {
+        let selectedEmotionCode = selectedEmotion ?? "joy"
 
+        let emotions = [
+            SelectedEmotion(emotion: selectedEmotionCode, level: 80)
+        ]
 
-struct DiaryWriteView_Previews: PreviewProvider {
-    static var previews: some View {
-        ZStack {
-            Color(red: 0.15, green: 0.15, blue: 0.15).ignoresSafeArea()
+        // 서버 호출
+        await viewModel.writeDiary(
+            content: content.trimmingCharacters(in: .whitespacesAndNewlines),
+            emotions: emotions
+        )
 
-            DiaryWriteView(
-                onSave: { entry in
-                    print("저장된 일기:", entry)
-                },
-                onCancel: {
-                    print("취소됨")
-                }
-            )
+        // 서버 응답이 있으면 “저장 완료” 알림 → 홈뷰에서 로딩뷰 닫음
+        if viewModel.response != nil {
+            onFinishSave()
         }
     }
 }
