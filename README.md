@@ -83,7 +83,7 @@
 | **프론트엔드** | Swift, SwiftUI, UIKit |
 | **백엔드** | AWS Lambda (서버리스), API Gateway |
 | **DB** | AWS RDS MySQL / Aurora MySQL |
-| **AI** | AWS Bedrock (GPT 기반 감정 분석) |
+| **AI** | AWS Bedrock (Claude 기반 감정 분석) |
 | **인프라** | AWS Cloud, Terraform (IaC) |
 
 &nbsp;
