@@ -28,7 +28,7 @@ struct PhotoLineView: View {
                         let rotation = Double.random(in: -7...7)
                         let yOffset : CGFloat = abs(rotation) >= 5 ? 4 : 10 // 사진 기울기에 따른 오프셋 조정
  
-                        DiaryCardView(dateText: entry.date, emotionImageName: entry.emotionImageName)
+                        DiaryCardView(content: entry.content, dateText: entry.date, emotionImageName: entry.emotionImageName)
                             .frame(width: 130, height: 160)
                             .rotationEffect(.degrees(rotation))
                             .offset(y: yOffset) // 줄과 사진 사이의 거리 조절
