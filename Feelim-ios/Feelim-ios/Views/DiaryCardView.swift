@@ -29,7 +29,7 @@ struct DiaryCardView: View {
                 
                     // 날짜 텍스트
                     Text(dateText)
-                        .font(.custom("SF Pro Display", size: 7.67).weight(.medium))
+                        .font(.custom("Nanum Pen", size: 12).weight(.medium))
                         .italic()
                         .foregroundColor(.white)
                     

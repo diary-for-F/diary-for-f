@@ -87,7 +87,7 @@ struct DiaryDetailView: View {
                         // 성공적으로 로드된 일기 내용
                         ScrollView {
                             Text(viewModel.content)
-                                .font(.custom("SF Pro Display", size: 20).weight(.medium))
+                                .font(.custom("Nanum Pen", size: 26).weight(.medium))
                                 .lineSpacing(29)
                                 .italic(true)
                                 .foregroundColor(.white)
@@ -110,7 +110,7 @@ struct DiaryDetailView: View {
             // 일기 작성 시점 타임스탬프
             if !viewModel.isLoading && viewModel.errorMessage == nil {
                 Text("\(viewModel.formattedDate) \(viewModel.formattedTime)")
-                    .font(.custom("Roboto", size: 15))
+                    .font(.custom("Nanum Pen", size: 23))
                     .foregroundColor(.black)
                     .offset(x: -1, y: 270)
             }
