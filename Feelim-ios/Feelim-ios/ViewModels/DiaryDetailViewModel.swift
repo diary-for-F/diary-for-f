@@ -95,7 +95,7 @@ class DiaryDetailViewModel: ObservableObject {
             print("AI 피드백 조회 오류: \(error)")
         }
     }
-    
+  
     /// “yyyy.MM.dd” 형식으로 포맷팅된 문자열
     var formattedDate: String {
         displayDateFormatter.string(from: createdAt)
@@ -115,5 +115,4 @@ class DiaryDetailViewModel: ObservableObject {
     var formattedAITime: String {
         displayTimeFormatter.string(from: aiCreatedAt)
     }
-
 }
