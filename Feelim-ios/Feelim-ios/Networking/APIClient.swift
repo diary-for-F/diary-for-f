@@ -101,27 +101,26 @@ class APIClient {
     }
     
     // 특정 일기 AI 답변 조회
-        func fetchAIFeedback(id: String) async throws -> DiaryAIFeedbackResponse {
-            let urlString = "\(baseURL)/ai-feedback?id=\(id)"
-            
-            guard let url = URL(string: urlString) else {
-                throw URLError(.badURL)
-            }
+    func fetchAIFeedback(id: String) async throws -> DiaryAIFeedbackResponse {
+        let urlString = "\(baseURL)/ai-feedback?id=\(id)"
 
-            let (data, response) = try await URLSession.shared.data(from: url)
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else {
-                let bodyString = String(data: data, encoding: .utf8) ?? "(응답 body 파싱 실패)"
-                print("[AI 피드백 조회] 서버 오류 상태코드: \((response as? HTTPURLResponse)?.statusCode ?? -1)")
-                print("서버 응답 내용: \(bodyString)")
-                throw URLError(.badServerResponse)
-            }
-
-            let decoder = JSONDecoder()
-            let aiResponse = try decoder.decode(DiaryAIFeedbackResponse.self, from: data)
-            print("[AI 피드백 조회] 디코딩 성공: \(aiResponse)")
-            
-            return aiResponse
+        guard let url = URL(string: urlString) else {
+            throw URLError(.badURL)
         }
+
+        let (data, response) = try await URLSession.shared.data(from: url)
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            let bodyString = String(data: data, encoding: .utf8) ?? "(응답 body 파싱 실패)"
+            print("[AI 피드백 조회] 서버 오류 상태코드: \((response as? HTTPURLResponse)?.statusCode ?? -1)")
+            print("서버 응답 내용: \(bodyString)")
+            throw URLError(.badServerResponse)
+        }
+
+        let decoder = JSONDecoder()
+        let aiResponse = try decoder.decode(DiaryAIFeedbackResponse.self, from: data)
+        print("[AI 피드백 조회] 디코딩 성공: \(aiResponse)")
+
+        return aiResponse
     }
 }
