@@ -83,22 +83,17 @@
 | **프론트엔드** | Swift, SwiftUI, UIKit |
 | **백엔드** | AWS Lambda (서버리스), API Gateway |
 | **DB** | AWS RDS MySQL / Aurora MySQL |
-| **AI** | AWS Bedrock (GPT 기반 감정 분석) |
+| **AI** | AWS Bedrock (Claude 기반 감정 분석) |
 | **인프라** | AWS Cloud, Terraform (IaC) |
 
 &nbsp;
 
 ### 📊 시스템 아키텍처
 
-```plaintext
-[사용자 (iOS 앱)]
-      │
-[API Gateway]
-      │
-[AWS Lambda] ──▶ [AWS Bedrock (GPT 감정 분석)]
-      │
-[AWS RDS (MySQL)]
-```
+
+- **클라우드 네이티브 구조로 설계되어**, 시스템은 자동으로 확장되며 상태를 저장하지 않는 방식으로 작동합니다. 인프라는 코드(Terraform)로 관리되어, 누구나 같은 환경을 쉽게 재현할 수 있습니다.  
+- **AWS RDS는 인터넷에서 직접 접근할 수 없는 VPC 내부에 배치**되어 있어 외부 공격으로부터 안전합니다. 대신, 같은 네트워크 안에 있는 Lambda 함수만 접근할 수 있게 설정해 **데이터 보안 수준을 높였습니다.**  
+- **서버리스 방식이기 때문에**, 사용자가 요청을 보낼 때만 컴퓨팅 자원이 작동합니다. 이 덕분에 **불필요한 리소스 낭비가 없고**, **운영 비용도 줄일 수 있습니다.**
 
 &nbsp;
 

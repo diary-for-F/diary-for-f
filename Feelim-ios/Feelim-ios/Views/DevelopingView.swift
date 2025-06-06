@@ -40,7 +40,7 @@ struct DevelopingView: View {
                 VStack(spacing: 10) {
                     Text("사진을 인화하는 중입니다.\n\n")
                         .foregroundColor(.white)
-                        .font(Font.custom("Arial", size: 20))
+                        .font(Font.custom("Nanum Pen", size: 20))
                     
                     HStack(spacing: 8) {
                         ForEach(0..<totalSteps, id: \.self) { index in
