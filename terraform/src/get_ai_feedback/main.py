@@ -13,16 +13,21 @@ def get_db_connection():
         charset="utf8mb4",
         cursorclass=pymysql.cursors.DictCursor
     )
+
+
+
 def lambda_handler(event, context):
     try:
         # path에서 diary_id 추출
-        path = event.get("rawPath", "")
-        parts = path.strip("/").split("/")
+        query_params = event.get("queryStringParameters", {})
+        diary_id = query_params.get("id")
         
-        if len(parts) >= 3 and parts[-1] == "ai":
-            diary_id = int(parts[-2])
-        else:
-            return {"statusCode": 400, "body": json.dumps({"error": "Invalid path format"})}
+        if diary_id is None:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"error": "Diary ID is invalid or not provided."})
+            }
+       
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
