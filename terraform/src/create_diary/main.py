@@ -2,6 +2,7 @@ import json
 import os
 import pymysql
 import boto3
+from datetime import datetime, timedelta
 
 
 # DB 연결
@@ -118,10 +119,13 @@ def lambda_handler(event, context):
         top_emotions, message = analyze_emotion_with_bedrock(content, selected)
         main_emotion_id = get_emotion_id(cursor, top_emotions[0]["emotion"])
 
+        #9시간 더해서 KST 저장
+        now_kst = datetime.utcnow() + timedelta(hours=9)
+
         # 일기 저장
         cursor.execute(
-            "INSERT INTO diary_entries (content, ai_feedback, main_emotion_id) VALUES (%s, %s, %s)",
-            (content, message, main_emotion_id))
+            "INSERT INTO diary_entries (content, ai_feedback, main_emotion_id, created_at) VALUES (%s, %s, %s, %s)",
+            (content, message, main_emotion_id, now_kst))
         diary_id = cursor.lastrowid
 
         # 감정 레벨 저장 (사용자 선택 / AI 예측)
@@ -139,11 +143,14 @@ def lambda_handler(event, context):
             "statusCode":
             201,
             "body":
-            json.dumps({
-                "id": diary_id,
-                "topEmotions": top_emotions,
-                "message": message
-            })
+            json.dumps(
+                {
+                    "id": diary_id,
+                    "createdAt": now_kst.strftime("%Y-%m-%d %H:%M:%S"),
+                    "topEmotions": top_emotions,
+                    "message": message
+                },
+                ensure_ascii=False)
         }
 
     except Exception as e:
