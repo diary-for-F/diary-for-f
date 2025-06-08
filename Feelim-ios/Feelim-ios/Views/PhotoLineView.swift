@@ -28,7 +28,8 @@ struct PhotoLineView: View {
                         let rotation = Double.random(in: -7...7)
                         let yOffset : CGFloat = abs(rotation) >= 5 ? 4 : 10 // 사진 기울기에 따른 오프셋 조정
  
-                        DiaryCardView(dateText: entry.date, emotionImageName: entry.emotionImageName)
+                        DiaryCardView(content: entry.content, dateText: entry.date, emotionImageName: entry.emotionImageName)
+                            .frame(width: 130, height: 160)
                             .rotationEffect(.degrees(rotation))
                             .offset(y: yOffset) // 줄과 사진 사이의 거리 조절
                             .contentShape(Rectangle())
@@ -37,7 +38,7 @@ struct PhotoLineView: View {
                             }
                     }
                 }
-                .padding(.horizontal, Double.random(in: 0...40))
+                .padding(.horizontal, Double.random(in: -10...20))
                 .padding(.vertical, 20)
             }
         }
@@ -59,7 +60,7 @@ struct PhotoLineView: View {
             .init(
                 date: "2025.05.02",
                 timestamp: "2025.05.02 09:15",
-                emotionImageName: "happy",
+                emotionImageName: "joy",
                 content: "아침에 상쾌한 공기를 마시며 산책했어요.",
                 aiReply: "아침 산책으로 기분이 한결 나아졌군요. 오늘도 좋은 하루 보내세요!",
                 aiImageName: "robot"
@@ -99,7 +100,7 @@ struct PhotoLineView: View {
             .init(
                 date: "2025.05.07",
                 timestamp: "2025.05.07 14:20",
-                emotionImageName: "happy",
+                emotionImageName: "joy",
                 content: "점심으로 맛있는 파스타를 먹었더니 기분이 좋네요.",
                 aiReply: "맛있는 음식으로 기분 전환하셨군요. 즐거운 순간이에요!",
                 aiImageName: "robot"

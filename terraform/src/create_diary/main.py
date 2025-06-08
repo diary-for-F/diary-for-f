@@ -2,32 +2,36 @@ import json
 import os
 import pymysql
 import boto3
-from datetime import datetime, timedelta  
+from datetime import datetime, timedelta
+
 
 # DB 연결
 def get_db_connection():
     secret = json.loads(os.getenv("DB_SECRETS"))
-    return pymysql.connect(
-        host=secret["host"],
-        port=int(secret["port"]),
-        user=secret["username"],
-        password=secret["password"],
-        db=secret["dbname"],
-        charset="utf8mb4",
-        cursorclass=pymysql.cursors.DictCursor
-    )
+    return pymysql.connect(host=secret["host"],
+                           port=int(secret["port"]),
+                           user=secret["username"],
+                           password=secret["password"],
+                           db=secret["dbname"],
+                           charset="utf8mb4",
+                           cursorclass=pymysql.cursors.DictCursor)
+
 
 # 감정 이름 → emotion_id 변환
 def get_emotion_id(cursor, name):
-    cursor.execute("SELECT emotion_id FROM emotions WHERE name = %s", (name,))
+    cursor.execute("SELECT emotion_id FROM emotions WHERE name = %s", (name, ))
     result = cursor.fetchone()
     if not result:
         raise ValueError(f"Emotion '{name}' not found in emotions table.")
     return result["emotion_id"]
 
+
 # Claude에 감정 분석 요청
 def analyze_emotion_with_bedrock(content, selected_emotions):
-    allowed_emotions = ["joy", "sadness", "anger", "fear", "surprise", "neutral"]
+    # Claude에 허용할 감정 목록을 명시
+    allowed_emotions = [
+        "joy", "sadness", "anger", "fear", "surprise", "neutral"
+    ]
 
     prompt = f"""
 당신은 따뜻한 말로 사람의 감정을 공감하고 위로하는 감성적인 심리상담사입니다.
@@ -52,15 +56,19 @@ Diary Content: {content}
 """.strip()
 
     body = {
-        "anthropic_version": "bedrock-2023-05-31",
-        "max_tokens": 1024,
-        "temperature": 0.7,
-        "messages": [
-            {
-                "role": "user",
-                "content": [{"type": "text", "text": prompt}]
-            }
-        ]
+        "anthropic_version":
+        "bedrock-2023-05-31",
+        "max_tokens":
+        1024,
+        "temperature":
+        0.7,
+        "messages": [{
+            "role": "user",
+            "content": [{
+                "type": "text",
+                "text": prompt
+            }]
+        }]
     }
 
     client = boto3.client("bedrock-runtime", region_name="ap-northeast-2")
@@ -68,12 +76,12 @@ Diary Content: {content}
         modelId="anthropic.claude-3-5-sonnet-20240620-v1:0",
         body=json.dumps(body),
         contentType="application/json",
-        accept="application/json"
-    )
+        accept="application/json")
 
     result = json.loads(response["body"].read())
     parsed = json.loads(result["content"][0]["text"].strip())
     return parsed["results"], parsed["message"]
+
 
 # 감정 레벨 저장 함수
 def insert_emotion_levels(cursor, emotions, diary_id, is_prediction=False):
@@ -83,8 +91,8 @@ def insert_emotion_levels(cursor, emotions, diary_id, is_prediction=False):
         emotion_id = get_emotion_id(cursor, name)
         cursor.execute(
             "INSERT INTO diary_entry_emotions (emotion_id, diary_id, level) VALUES (%s, %s, %s)",
-            (emotion_id, diary_id, level)
-        )
+            (emotion_id, diary_id, level))
+
 
 # Lambda entry point
 def lambda_handler(event, context):
@@ -98,8 +106,10 @@ def lambda_handler(event, context):
 
         if not content or not selected:
             return {
-                "statusCode": 400,
-                "body": json.dumps({"error": "Missing content or selectedEmotions"})
+                "statusCode":
+                400,
+                "body":
+                json.dumps({"error": "Missing content or selectedEmotions"})
             }
 
         conn = get_db_connection()
@@ -115,30 +125,33 @@ def lambda_handler(event, context):
         # 일기 저장
         cursor.execute(
             "INSERT INTO diary_entries (content, ai_feedback, main_emotion_id, created_at) VALUES (%s, %s, %s, %s)",
-            (content, message, main_emotion_id, now_kst)
-        )
+            (content, message, main_emotion_id, now_kst))
         diary_id = cursor.lastrowid
 
-        # 감정 저장
+        # 감정 레벨 저장 (사용자 선택 / AI 예측)
         insert_emotion_levels(cursor, selected, diary_id, is_prediction=False)
-        insert_emotion_levels(cursor, top_emotions, diary_id, is_prediction=True)
+        insert_emotion_levels(cursor,
+                              top_emotions,
+                              diary_id,
+                              is_prediction=True)
 
         conn.commit()
         cursor.close()
         conn.close()
 
         return {
-            "statusCode": 201,
-            "body": json.dumps({
-                "id": diary_id,
-                "createdAt": now_kst.strftime("%Y-%m-%d %H:%M:%S"),  
-                "topEmotions": top_emotions,
-                "message": message
-            }, ensure_ascii=False)
+            "statusCode":
+            201,
+            "body":
+            json.dumps(
+                {
+                    "id": diary_id,
+                    "createdAt": now_kst.strftime("%Y-%m-%d %H:%M:%S"),
+                    "topEmotions": top_emotions,
+                    "message": message
+                },
+                ensure_ascii=False)
         }
 
     except Exception as e:
-        return {
-            "statusCode": 500,
-            "body": json.dumps({"error": str(e)})
-        }
+        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}

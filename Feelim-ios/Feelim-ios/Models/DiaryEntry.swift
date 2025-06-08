@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct DiaryEntry: Identifiable {
-    var id = UUID()
+    var id: String
     let date: String               // ex. "2025.05.01"
     let timestamp: String          // ex. "2025.05.01 18:20"
-    let emotionImageName: String   // ex. "sad", "happy"…
+    let emotionImageName: String   // ex. "sadness", "joy"…
     let content: String            // 일기 본문
     
     // AI 답장용 필드
@@ -20,7 +20,7 @@ struct DiaryEntry: Identifiable {
     
     // 기본 생성자
     init(
-        id: UUID = UUID(),
+        id: String = "",
         date: String,
         timestamp: String,
         emotionImageName: String,
@@ -44,7 +44,7 @@ struct DiaryEntry: Identifiable {
         emotionImageName: String,
         content: String
     ) {
-        self.id = UUID()
+        self.id = ""
         self.date = date
         self.timestamp = timestamp
         self.emotionImageName = emotionImageName
