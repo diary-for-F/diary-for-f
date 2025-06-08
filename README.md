@@ -69,26 +69,31 @@
 &nbsp;
 
 ## 🏗️ 결과물
-
-### 🧪 프로토타입 (추후에 데모 영상으로 대체)
-
-<img src="https://github.com/user-attachments/assets/21efaee1-ba15-4455-945f-8fe35b8cf1bf" width="300"/>
+| 일기 조회 | 일기 생성 | AI의 답장 |
+|:---------:|:---------:|:---------:|
+| ![일기 조회](https://github.com/user-attachments/assets/4b6f06fa-d7fe-4b5f-a9d8-c7b98b0b1b41) | ![일기 생성](https://github.com/user-attachments/assets/46f591dc-dc39-4e98-8111-d649815d2d55) | ![AI의 답장](https://github.com/user-attachments/assets/e1c6999f-4eaf-4b2a-be66-dead27a91553) |
 
 &nbsp;
 
 ### 🔧 기술 스택
 
-| 구성 | 기술 스택 |
-|------|------------|
-| **프론트엔드** | Swift, SwiftUI, UIKit |
-| **백엔드** | AWS Lambda (서버리스), API Gateway |
-| **DB** | AWS RDS MySQL / Aurora MySQL |
-| **AI** | AWS Bedrock (Claude 기반 감정 분석) |
-| **인프라** | AWS Cloud, Terraform (IaC) |
+**Front-end**  
+![Swift](https://img.shields.io/badge/Swift-FA7343?style=for-the-badge&logo=swift&logoColor=white)
+![SwiftUI](https://img.shields.io/badge/SwiftUI-0A84FF?style=for-the-badge&logo=swift&logoColor=white)
+
+**Back-end**  
+![AWS Cloud](https://img.shields.io/badge/AWS%20Cloud-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+
+**Infra**  
+![Terraform](https://img.shields.io/badge/Terraform-623CE4?style=for-the-badge&logo=terraform&logoColor=white)
+
 
 &nbsp;
 
 ### 📊 시스템 아키텍처
+
+![Image](https://github.com/user-attachments/assets/ef3c44a5-a63b-4ccc-8938-b3f25ec5b3ae)
 
 
 - **클라우드 네이티브 구조로 설계되어**, 시스템은 자동으로 확장되며 상태를 저장하지 않는 방식으로 작동합니다. 인프라는 코드(Terraform)로 관리되어, 누구나 같은 환경을 쉽게 재현할 수 있습니다.  
@@ -99,14 +104,28 @@
 
 ## ⚙️ 개발 결과물 사용 방법
 
-### 💻 설치 방법
-- **Xcode 빌드**로 직접 설치 및 데모 시연 가능
-- 단, Mac으로 돌려야 함
+### 🔧 설치 및 빌드 방법
+1. 이 저장소를 클론합니다.
+```bash
+git clone https://github.com/your-repo-url/Feelim.git
+```
+
+2. Xcode에서 프로젝트를 엽니다.
+```bash
+open diary-for-f/Feelim-ios
+```
+
+3. 상단 Device에서 `iPhone 16 Pro (iOS 17.x)` 시뮬레이터 선택
+
+4. `Cmd + R` 키 또는 Run 버튼을 클릭하여 빌드 및 실행
+
+&nbsp;
 
 ### 🚀 실행 흐름 (시나리오)
 1. 사용자가 일기 작성
-2. AI 감정 분석 → 맞춤형 위로 생성
-3. 폴라로이드 UI로 일기 시각화
+2. AI 감정 분석
+3. 제일 상단 줄에 추가된 일기 확인
+4. 해당 일기 선택 후, 클릭해서 AI 답변 확인
 
 &nbsp;
 
