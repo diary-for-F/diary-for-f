@@ -9,8 +9,9 @@ import Foundation
 import SwiftUI
 
 struct DiaryDetailView: View {
-    let entry: DiaryEntry
-    @Environment(\.presentationMode) private var presentationMode
+    let diaryId: String
+    
+    @StateObject private var viewModel = DiaryDetailViewModel()
     
     // 뒤집힘 상태
     @State private var isFlipped: Bool = false
@@ -25,7 +26,7 @@ struct DiaryDetailView: View {
                     axis: (x: 0, y: -1, z: 0), // y : flip 방향
                     perspective: 0.5
                 )
-
+            
             // 뒷면
             backView
                 .opacity(isFlipped ? 1 : 0)
@@ -39,6 +40,14 @@ struct DiaryDetailView: View {
         .animation(.easeInOut(duration: 0.6), value: isFlipped)
         .onTapGesture {
             isFlipped.toggle()
+        }
+        .onAppear {
+            Task {
+                // 사용자 일기 상세 조회
+                await viewModel.loadDetail(id: diaryId)
+                // AI 피드백 조회
+                await viewModel.loadAIFeedback(id: diaryId)
+            }
         }
     }
     
@@ -62,33 +71,49 @@ struct DiaryDetailView: View {
                         .frame(width: 349, height: 457)
                         .offset(x: -1, y: 6)
 
-                    // 본문 텍스트
-                    ScrollView {
-                        Text(entry.content)
-                            .font(.custom("SF Pro Display", size: 20).weight(.medium))
-                            .lineSpacing(29)
-                            .italic()
+                    if viewModel.isLoading {
+                        // 로딩 중에는 인디케이터
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .scaleEffect(1.5)
                             .foregroundColor(.white)
+                    } else if let error = viewModel.errorMessage {
+                        // 에러가 있으면 에러 메시지 표시
+                        Text("Error: \(error)")
+                            .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
                             .padding()
+                    } else {
+                        // 성공적으로 로드된 일기 내용
+                        ScrollView {
+                            Text(viewModel.content)
+                                .font(.custom("Nanum Pen", size: 26).weight(.medium))
+                                .lineSpacing(29)
+                                .italic(true)
+                                .foregroundColor(.white)
+                                .padding()
+                        }
+                        .frame(width: 349, height: 400)
+                        .offset(x: -1, y: 30)
+                        
+                        /// 감정 이모지
+                        let emoAsset = viewModel.mainEmotion
+                        Image(emoAsset)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 90, height: 90)
+                            .offset(y: -260)
                     }
-                    .frame(width: 349, height: 400)
-                    .offset(x: -1, y: 30)
-                    
-                    // 감정 이모지
-                    Image(entry.emotionImageName)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 90, height: 90)
-                        .offset(y: -260) // 위치 조절
                 }
             }
             
-            // 타임스탬프
-            Text(entry.timestamp)
-                .font(.custom("Roboto", size: 15))
-                .foregroundColor(.black)
-                .offset(x: -1, y: 270)
-
+            // 일기 작성 시점 타임스탬프
+            if !viewModel.isLoading && viewModel.errorMessage == nil {
+                Text("\(viewModel.formattedDate) \(viewModel.formattedTime)")
+                    .font(.custom("Nanum Pen", size: 23))
+                    .foregroundColor(.black)
+                    .offset(x: -1, y: 270)
+            }
         }
         .frame(width: 393, height: 629)
     }
@@ -96,38 +121,51 @@ struct DiaryDetailView: View {
     // 뒷면: AI 답장 조회
     private var backView: some View {
         ZStack {
-            // 흰색 카드
             Rectangle()
                 .fill(Color.white)
                 .frame(width: 393, height: 569.6)
                 .offset(y: 29.7)
                 .shadow(color: Color.black.opacity(0.10), radius: 16.52)
-            
-            // AI 이모지
-            Image(entry.aiImageName)
+
+            if viewModel.isLoadingAI {
+            // AI 로딩 중 인디케이터
+            ProgressView()
+                .scaleEffect(1.5)
+                .foregroundColor(.gray)
+            }
+            else if let aiError = viewModel.aiErrorMessage {
+                // AI 호출 에러 시 에러 메시지
+                Text("AI Error: \(aiError)")
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+                    .padding()
+            }
+            else {
+                // 정상적으로 받아온 AI 위로 메시지
+                ScrollView {
+                    Text(viewModel.aiReply)
+                        .font(.custom("Nanum Pen", size: 26).weight(.medium))
+                        .lineSpacing(29)
+                        .italic(true)
+                        .foregroundColor(.black)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 32)
+                }
+                .frame(width: 349, height: 340)
+                .offset(x: -1, y: 30)
+                
+            // AI 답변 생성 시각 (YYYY.MM.DD HH:mm)
+            Text("\(viewModel.formattedAIDate) \(viewModel.formattedAITime)")
+                .font(.custom("Nanum Pen", size: 23))
+                .foregroundColor(.black)
+                .offset(x: -1, y: 270)
+            }
+            /// 감정 이모지
+            Image("robot")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 90, height: 90)
-                .offset(y: -260) // 위치 조절
-            
-            // AI 답장 본문
-            ScrollView {
-                Text(entry.aiReply)
-                    .font(.custom("SF Pro Display", size: 20).weight(.medium))
-                    .lineSpacing(29)
-                    .italic(true)
-                    .foregroundColor(.black)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 32)
-            }
-            .frame(width: 349, height: 340)
-            .offset(x: -1, y: 30)
-            
-            // 답장 생성 시점의 타임스탬프
-            Text(entry.timestamp)
-                .font(.custom("Roboto", size: 15))
-                .foregroundColor(.black)
-                .offset(x: -1, y: 270)
+                .offset(y: -260)
         }
     }
 }

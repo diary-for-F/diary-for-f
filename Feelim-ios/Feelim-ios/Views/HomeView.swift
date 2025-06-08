@@ -11,12 +11,12 @@ struct HomeView: View {
     // 작성된 일기 조회
     @StateObject private var viewModel = DiaryListViewModel()
     
-    // 특정 일기 선택 여부
-    @State private var selectedEntry : DiaryEntry?
-    
+    // 특정 일기 선택 여부 (id만 저장)
+    @State private var selectedDiaryId: String?
+
     // 새 일기 작성 화면 표시 여부
     @State private var isPresentingWriteView = false
-
+    
     // 로딩 화면 표시 여부
     @State private var isPresentingDevelopingView = false
 
@@ -42,8 +42,10 @@ struct HomeView: View {
                 // 일기 목록
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 64) {
-                        PhotoLineView(entries: viewModel.diaryEntries) { entry in
-                            selectedEntry = entry
+                        ForEach(viewModel.groupedDiaryEntries, id: \.weekOfYear) { group in
+                            PhotoLineView(entries: group.entries) { entry in
+                                selectedDiaryId = entry.id
+                            }
                         }
                     }
                     .padding(.vertical, 0)
@@ -78,17 +80,21 @@ struct HomeView: View {
                         isPresentingWriteView = false
                     }
                 DiaryWriteView(
-                    onSave: { newEntry in
-                        viewModel.diaryEntries.insert(newEntry, at: 0)
-                        isPresentingWriteView = false
-                        isPresentingDevelopingView = true
-                        
-                        // (임시) 로딩 7초 후 자동 닫기
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 7) {
+                    onStartSave: {
+                        // 로딩화면 띄우기
+                        DispatchQueue.main.async {
+                            isPresentingWriteView = false
+                            isPresentingDevelopingView = true
+                        }
+                    },
+                    onFinishSave: {
+                        // 다시 전체 일기 불러오기 + 로딩화면 닫기
+                        Task { @MainActor in
+                            await viewModel.loadDiaries()
                             isPresentingDevelopingView = false
                         }
-                    }
-                    , onCancel: {
+                    },
+                    onCancel: {
                         isPresentingWriteView = false
                     }
                 )
@@ -98,29 +104,25 @@ struct HomeView: View {
             }
             
             // 특정 일기 조회 모달
-            if let entry = selectedEntry {
-                // 어두운 배경
+            if let diaryId = selectedDiaryId {
                 Color.black.opacity(0.6)
                     .ignoresSafeArea()
                     .onTapGesture {
-                        withAnimation { selectedEntry = nil }
+                        withAnimation { selectedDiaryId = nil }
                     }
 
-                // 일기 상세 뷰
-                DiaryDetailView(entry: entry)
+                // 새로 생성된 API기반 DiaryDetailView에 diaryId만 넘겨줌
+                DiaryDetailView(diaryId: diaryId)
                     .frame(width: 350, height: 500)
                     .shadow(color: Color.black.opacity(0.10), radius: 16.52, x: 0, y: 0)
                     .zIndex(1)
-                    // 카드 자체 탭은 막아서 배경 탭만 동작하게
-                    .onTapGesture { /* 아무 동작 없음 */ }
+                    .onTapGesture { /* 카드 탭 방지 */ }
             }
         }
-        
-        // 로딩 화면 모달
+        // 로딩 화면 표시
         .fullScreenCover(isPresented: $isPresentingDevelopingView) {
             DevelopingView()
         }
-        
          // 전체 일기 조회 API 호출
         .task {
             await viewModel.loadDiaries()

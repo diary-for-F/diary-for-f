@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct EmotionIconView: View {
-    let emotionImageName: String // "happy", "sad" 등 이미지 이름
+    let emotionImageName: String
 
     var body: some View {
         ZStack {
